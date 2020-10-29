@@ -81,17 +81,44 @@ int g_func(int test_case) {
 	}
 	}
 }
+
+void manager(char* process) {
+	namespace bp = boost::process;
+	std::chrono::seconds hang_time(10);
+	bp::child f(process, "f_func", bp::std_in = stdin,
+		bp::std_out = stdout, bp::std_err = stderr);
+	bp::child g(process, "g_func", bp::std_in = stdin,
+		bp::std_out = stdout, bp::std_err = stderr);
+	while (f.running() && g.running()) {
+
+	}
+	if (!(f.running())) {
+		std::cout << "f ended with " << f.exit_code() << std::endl;
+		if (!g.wait_for(hang_time)) {
+			g.terminate();
+			std::cout << "g was terminated because it hung on for too long" << std::endl;
+		}
+		else {
+			std::cout << "g ended with " << g.exit_code() << std::endl;
+		}
+	}
+	else {
+		std::cout << "g ended with " << g.exit_code() << std::endl;
+		if (!f.wait_for(hang_time)) {
+			f.terminate();
+			std::cout << "f was terminated because it hung on for too long" << std::endl;
+		}
+		else {
+			std::cout << "f ended with " << f.exit_code() << std::endl;
+		}
+	}
+}
+
 int main(int argc, char** argv) {
-    namespace bp = boost::process;
+	namespace bp = boost::process;
     std::error_code ec;
     if (argc == 1) {
-        bp::child f(argv[0], "f_func", bp::std_in = stdin,
-            bp::std_out = stdout, bp::std_err = stderr);
-        bp::child g(argv[0], "g_func", bp::std_in = stdin,
-            bp::std_out = stdout, bp::std_err = stderr);
-        f.wait();
-        g.wait();
-		std::cout << f.exit_code() + g.exit_code();
+		manager(argv[0]);
     }
     else if ((std::string)(argv[argc - 1]) == "f_func"){
         std::cout << "Child process f" << std::endl;
