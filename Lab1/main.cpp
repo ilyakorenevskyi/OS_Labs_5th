@@ -16,13 +16,11 @@ int binaryOperation(int a, int b) {
 	return a * b;
 }
 
-bool keyCheck() {
+bool checkCancelation() {
 	return GetKeyState('C') && GetKeyState(VK_CONTROL);
 }
 
 int f_func(int test_case) {
-	
-	
 	switch (test_case) {
 	case 0: {
 		std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -104,18 +102,29 @@ int g_func(int test_case) {
 
 void manager(char* process) {
 	namespace bp = boost::process;
+
+
 	bp::opstream f_in, g_in;
+	bp::ipstream f_out, g_out;
+
+
 	bp::group func;
 	bp::child f(process, "f_func", bp::std_in < f_in,
-		bp::std_out > stdout, bp::std_err = stderr,func);
+		bp::std_out > f_out, bp::std_err = stderr,func);
 	bp::child g(process, "g_func", bp::std_in < g_in,
-		bp::std_out > stdout, bp::std_err = stderr,func);
-	std::string data = "1";
-	f_in << data << std::endl;
-	g_in << data << std::endl;
-	int f_res = -1, g_res = -1;
+		bp::std_out > g_out, bp::std_err = stderr,func);
+
+	int test_num;
+	std::cout << "Enter test case number or -1 to exit\n";
+	std::cin >> test_num;
+	f_in << test_num << std::endl;
+	g_in << test_num << std::endl;
+
+	int f_res = -1,
+		g_res = -1;
+
 	while (f.running() && g.running()) {
-		if (keyCheck()) {
+		if (checkCancelation()) {
 			func.terminate();
 			std::cout << "f was terminated" << std::endl;
 			std::cout << "g was terminated" << std::endl;
@@ -125,38 +134,40 @@ void manager(char* process) {
 	}
 
 	if (f_res != NULL && g_res != NULL) {
+		
 		if (!(f.running())) {
-			f_res = f.exit_code();
+			f_out >> f_res;
 			std::cout << "f ended with " << f_res << std::endl;
 			while (g.running()) {
-				if (keyCheck()) {
+				if (checkCancelation()) {
 					g.terminate();
 					g_res = NULL;
 					std::cout << "g was terminated" << std::endl;
 				}
 			}
 			if (g_res != NULL) {
-				g_res = g.exit_code();
+				g_out >> g_res;
 				std::cout << "g ended with " << g_res << std::endl;
 			}
 		}
 		else {
-			g_res = g.exit_code();
-			std::cout << "g ended with " << g.exit_code() << std::endl;
+			g_out >> g_res;
+			std::cout << "g ended with " << g_res << std::endl;
 			while (f.running()) {
-				if (keyCheck()) {
+				if (checkCancelation()) {
 					f.terminate();
 					f_res = NULL;
 					std::cout << "f was terminated" << std::endl;
 				}
 			}
 			if (f_res != NULL) {
-				f_res = f.exit_code();
+				f_out >> f_res;
 				std::cout << "f ended with " << f_res << std::endl;
 			}
 		}
 	}
-	std::cout <<"f*g result is: " << binaryOperation(f_res,g_res);
+
+	std::cout <<"f(x)*g(x) result is: " << binaryOperation(f_res,g_res);
 }
 
 int main(int argc, char** argv) {
@@ -166,17 +177,17 @@ int main(int argc, char** argv) {
 		manager(argv[0]);
     }
     else if ((std::string)(argv[argc - 1]) == "f_func"){
-		std::string a;
+		int a;
 		std::cin >> a;
-		std::cout << a;
-		return spos::lab1::demo::f_func<spos::lab1::demo::INT>(a[0]-'0');
+		std::cout << spos::lab1::demo::f_func<spos::lab1::demo::INT>(a);
+		return 0;
 		/*return f_func(0);*/
     }
     else {
-		std::string a;
+		int a;
 		std::cin >> a;
-		std::cout << a;
-		return spos::lab1::demo::g_func<spos::lab1::demo::INT>(a[0]-'0');
+		std::cout << spos::lab1::demo::g_func<spos::lab1::demo::INT>(a);
+		return 0;
 		/*return g_func(0);*/
 		
     }
