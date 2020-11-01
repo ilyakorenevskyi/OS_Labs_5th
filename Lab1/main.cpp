@@ -5,9 +5,10 @@
 #include <iostream>
 #include <Windows.h>
 #include "demofuncs"
+#include <namedpipeapi.h>
 
 int binaryOperation(int a, int b) {
-	if (a == 0 || b == 0) {
+	if ((a == 0 && a!=NULL) || (b == 0 && b!=NULL)) {
 		return 0;
 	}
 	if (a == NULL || b == NULL) {
@@ -102,20 +103,26 @@ int g_func(int test_case) {
 
 void manager(char* process) {
 	namespace bp = boost::process;
-
-
+	int fl[2];
+	bp::pipe p;
 	bp::opstream f_in, g_in;
 	bp::ipstream f_out, g_out;
-
-
 	bp::group func;
-	bp::child f(process, "f_func", bp::std_in < f_in,
+	bp::child f(process, "f_func",p.native_sink(), bp::std_in < f_in,
 		bp::std_out > f_out, bp::std_err = stderr,func);
 	bp::child g(process, "g_func", bp::std_in < g_in,
 		bp::std_out > g_out, bp::std_err = stderr,func);
-
+	
+	
 	int test_num;
+	
 	std::cout << "Enter test case number or -1 to exit\n";
+	std::cout << "0 f finishes before g with non-zero value\n";
+	std::cout << "1 g finishes before f with non-zero value\n";
+	std::cout << "2 f finishes with zero value, g hangs\n";
+	std::cout << "3 g finishes with zero value, f hangs\n";
+	std::cout << "4 f finishes with non-zero value, g hangs\n";
+	std::cout << "5 g finishes with non-zero value, f hangs\n";
 	std::cin >> test_num;
 	f_in << test_num << std::endl;
 	g_in << test_num << std::endl;
@@ -177,16 +184,16 @@ int main(int argc, char** argv) {
 		manager(argv[0]);
     }
     else if ((std::string)(argv[argc - 1]) == "f_func"){
-		int a;
-		std::cin >> a;
-		std::cout << spos::lab1::demo::f_func<spos::lab1::demo::INT>(a);
+		int data;
+		std::cin >> data;
+		std::cout << spos::lab1::demo::f_func<spos::lab1::demo::INT>(data);
 		return 0;
 		/*return f_func(0);*/
     }
     else {
-		int a;
-		std::cin >> a;
-		std::cout << spos::lab1::demo::g_func<spos::lab1::demo::INT>(a);
+		int data;
+		std::cin >> data;
+		std::cout << spos::lab1::demo::g_func<spos::lab1::demo::INT>(data);
 		return 0;
 		/*return g_func(0);*/
 		
