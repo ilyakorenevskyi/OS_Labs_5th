@@ -103,12 +103,10 @@ int g_func(int test_case) {
 
 void manager(char* process) {
 	namespace bp = boost::process;
-	int fl[2];
-	bp::pipe p;
 	bp::opstream f_in, g_in;
 	bp::ipstream f_out, g_out;
 	bp::group func;
-	bp::child f(process, "f_func",p.native_sink(), bp::std_in < f_in,
+	bp::child f(process, "f_func", bp::std_in < f_in,
 		bp::std_out > f_out, bp::std_err = stderr,func);
 	bp::child g(process, "g_func", bp::std_in < g_in,
 		bp::std_out > g_out, bp::std_err = stderr,func);
