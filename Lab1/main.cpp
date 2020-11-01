@@ -3,11 +3,30 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
+#include <Windows.h>
+#include "demofuncs"
+
+int binaryOperation(int a, int b) {
+	if (a == 0 || b == 0) {
+		return 0;
+	}
+	if (a == NULL || b == NULL) {
+		return NULL;
+	}
+	return a * b;
+}
+
+bool keyCheck() {
+	return GetKeyState('C') && GetKeyState(VK_CONTROL);
+}
 
 int f_func(int test_case) {
+	
+	
 	switch (test_case) {
 	case 0: {
 		std::this_thread::sleep_for(std::chrono::seconds(2));
+		std::cout << "Hello, f!";
 		return 2;
 		break;
 	}
@@ -47,6 +66,7 @@ int g_func(int test_case) {
 	switch (test_case) {
 	case 0: {
 		std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::cout << "Hello, g!";
 		return 3;
 		break;
 	}
@@ -84,34 +104,59 @@ int g_func(int test_case) {
 
 void manager(char* process) {
 	namespace bp = boost::process;
-	std::chrono::seconds hang_time(10);
-	bp::child f(process, "f_func", bp::std_in = stdin,
-		bp::std_out = stdout, bp::std_err = stderr);
-	bp::child g(process, "g_func", bp::std_in = stdin,
-		bp::std_out = stdout, bp::std_err = stderr);
+	bp::opstream f_in, g_in;
+	bp::group func;
+	bp::child f(process, "f_func", bp::std_in < f_in,
+		bp::std_out > stdout, bp::std_err = stderr,func);
+	bp::child g(process, "g_func", bp::std_in < g_in,
+		bp::std_out > stdout, bp::std_err = stderr,func);
+	std::string data = "1";
+	f_in << data << std::endl;
+	g_in << data << std::endl;
+	int f_res = -1, g_res = -1;
 	while (f.running() && g.running()) {
+		if (keyCheck()) {
+			func.terminate();
+			std::cout << "f was terminated" << std::endl;
+			std::cout << "g was terminated" << std::endl;
+			f_res = NULL;
+			g_res = NULL;
+		}
+	}
 
-	}
-	if (!(f.running())) {
-		std::cout << "f ended with " << f.exit_code() << std::endl;
-		if (!g.wait_for(hang_time)) {
-			g.terminate();
-			std::cout << "g was terminated because it hung on for too long" << std::endl;
+	if (f_res != NULL && g_res != NULL) {
+		if (!(f.running())) {
+			f_res = f.exit_code();
+			std::cout << "f ended with " << f_res << std::endl;
+			while (g.running()) {
+				if (keyCheck()) {
+					g.terminate();
+					g_res = NULL;
+					std::cout << "g was terminated" << std::endl;
+				}
+			}
+			if (g_res != NULL) {
+				g_res = g.exit_code();
+				std::cout << "g ended with " << g_res << std::endl;
+			}
 		}
 		else {
+			g_res = g.exit_code();
 			std::cout << "g ended with " << g.exit_code() << std::endl;
+			while (f.running()) {
+				if (keyCheck()) {
+					f.terminate();
+					f_res = NULL;
+					std::cout << "f was terminated" << std::endl;
+				}
+			}
+			if (f_res != NULL) {
+				f_res = f.exit_code();
+				std::cout << "f ended with " << f_res << std::endl;
+			}
 		}
 	}
-	else {
-		std::cout << "g ended with " << g.exit_code() << std::endl;
-		if (!f.wait_for(hang_time)) {
-			f.terminate();
-			std::cout << "f was terminated because it hung on for too long" << std::endl;
-		}
-		else {
-			std::cout << "f ended with " << f.exit_code() << std::endl;
-		}
-	}
+	std::cout <<"f*g result is: " << binaryOperation(f_res,g_res);
 }
 
 int main(int argc, char** argv) {
@@ -121,12 +166,19 @@ int main(int argc, char** argv) {
 		manager(argv[0]);
     }
     else if ((std::string)(argv[argc - 1]) == "f_func"){
-        std::cout << "Child process f" << std::endl;
-		return f_func(0);
+		std::string a;
+		std::cin >> a;
+		std::cout << a;
+		return spos::lab1::demo::f_func<spos::lab1::demo::INT>(a[0]-'0');
+		/*return f_func(0);*/
     }
     else {
-        std::cout << "Child process g" << std::endl;
-		return g_func(0);
+		std::string a;
+		std::cin >> a;
+		std::cout << a;
+		return spos::lab1::demo::g_func<spos::lab1::demo::INT>(a[0]-'0');
+		/*return g_func(0);*/
+		
     }
-    
+	return 0;
 }
