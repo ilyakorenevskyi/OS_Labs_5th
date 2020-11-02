@@ -20,7 +20,9 @@ int f_func(int test_case) {
 		break;
 	}
 	case 3: {
-		std::this_thread::sleep_for(std::chrono::seconds(100));
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(100));
+		}
 		return 0;
 		break;
 	}
@@ -30,7 +32,9 @@ int f_func(int test_case) {
 		break;
 	}
 	case 5: {
-		std::this_thread::sleep_for(std::chrono::seconds(100));
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(100));
+		}
 		return 0;
 		break;
 	}
@@ -54,7 +58,9 @@ int g_func(int test_case) {
 		break;
 	}
 	case 2: {
-		std::this_thread::sleep_for(std::chrono::seconds(600));
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(100));
+		}
 		return 0;
 		break;
 	}
@@ -64,7 +70,9 @@ int g_func(int test_case) {
 		break;
 	}
 	case 4: {
-		std::this_thread::sleep_for(std::chrono::seconds(600));
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(100));
+		}
 		return 0;
 		break;
 	}
