@@ -46,6 +46,9 @@ void manager(char* process) {
 
 	int test_num;
 	std::cin >> test_num;
+	if (test_num == -1) {
+		return;
+	}
 	bp::group func;
 	bp::child f(process, "f_func", bp::std_in < f_in,
 		bp::std_out > f_out, bp::std_err = stderr, func);
@@ -79,7 +82,7 @@ void manager(char* process) {
 			f_out >> f_res;
 			std::cout << "f ended with " << f_res << std::endl;
 			while (g.running()) {					//Waiting for g to end
-				if (checkCancelation()) {
+				if (checkCancelation() || f_res == 0) {
 					g.terminate();
 					g_res = MININT;
 					std::cout << "g was terminated" << std::endl;
@@ -98,7 +101,7 @@ void manager(char* process) {
 
 			while (f.running()) {  				//Waiting for f to end
 				
-				if (checkCancelation()) {			//Checking cancelation 
+				if (checkCancelation() || g_res == 0) {			//Checking cancelation 
 					f.terminate();
 					f_res = MININT;
 					std::cout << "f was terminated" << std::endl;
@@ -132,25 +135,22 @@ void manager(char* process) {
 }
 
 int main(int argc, char** argv) {
-
+	
     if (argc == 1) {		// Program runs as a manager
-
 		manager(argv[0]);
-
     }
     else {					// Program runs as a function (child process)
-
 		int data;
 		std::cin >> data;
 		if ((std::string)(argv[argc - 1]) == "f_func") {
-			std::cout << spos::lab1::demo::f_func<spos::lab1::demo::INT>(data);
+			/*std::cout << spos::lab1::demo::f_func<spos::lab1::demo::INT>(data);*/
+			std::cout << f_func(data);
 			return 0;
-			/*return f_func(0);*/
 		}
 		else {
-			std::cout << spos::lab1::demo::g_func<spos::lab1::demo::INT>(data);
+			/*std::cout << spos::lab1::demo::g_func<spos::lab1::demo::INT>(data);*/
+			std::cout << g_func(data);
 			return 0;
-			/*return g_func(0);*/
 		}
     }
 	return 0;
