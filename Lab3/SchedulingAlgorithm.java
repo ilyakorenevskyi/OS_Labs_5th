@@ -19,27 +19,33 @@ public class SchedulingAlgorithm {
     result.schedulingName = "Shortest remaining time";
 
     try {
+
       //BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
       //OutputStream out = new FileOutputStream(resultsFile);
       PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
       currentProcess = getShortestRemainingTime(processVector, -1);
       sProcess process = (sProcess) processVector.elementAt(currentProcess);
       out.println("Process: " + currentProcess + " registered... (" + process.cputime + " " + process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
+
+
       while (comptime < runtime) {
-        if (process.cpudone == process.cputime) {
+
+        if (process.cpudone == process.cputime) {                       //Checking if process is done
           completed++;
           out.println("Process: " + currentProcess + " completed... (" + process.cputime + " " + process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
-          if (completed == size && arrivalSize==0) {
+          if (completed == size && arrivalSize==0) {                    //Cheking if there are more processes to work with
             result.compuTime = comptime;
             out.close();
             return result;
           }
+
           currentProcess = getShortestRemainingTime(processVector,currentProcess);
           process = (sProcess) processVector.elementAt(currentProcess);
           out.println("Process: " + currentProcess + " registered... (" + process.cputime + " " + process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
+
         }
 
-        if (process.ioblocking == process.ionext) {
+        if (process.ioblocking == process.ionext) {                   //If process is blocked, change process
           out.println("Process: " + currentProcess + " I/O blocked... (" + process.cputime + " " + process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
           process.numblocked++;
           process.ionext = 0;
@@ -49,24 +55,33 @@ public class SchedulingAlgorithm {
         }
 
 
-        previousProcess = currentProcess;
+        previousProcess = currentProcess;                              // Adding new processes which have to arrive
         for(int i = 0; i<arrivalSize; i++){
+
           sProcess toArriveProcess = (sProcess) toArriveVector.elementAt(i);
+
           if(toArriveProcess.arrivaltime == comptime){
+
             processVector.add(toArriveProcess);
             toArriveVector.remove(i);
             i--;
             arrivalSize--;
+
             out.println("Process: " + size + " arrived... (" + toArriveProcess.cputime + " " + toArriveProcess.ioblocking + " " +toArriveProcess.cpudone + " " + toArriveProcess.cpudone + ")");
-            if(toArriveProcess.cputime < (process.cputime-process.cpudone)) {
+
+            if(toArriveProcess.cputime < (process.cputime-process.cpudone) || (toArriveProcess.cputime == (process.cputime-process.cpudone) && toArriveProcess.priority > process.priority)) {
+
               out.println("Process: " + previousProcess + " stoped... (" + process.cputime + " " + process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
               process = toArriveProcess;
               currentProcess = size;
+
             }
+
             size++;
+
           }
         }
-        if(previousProcess != currentProcess ){
+        if(previousProcess != currentProcess ){        //If new process arrived and working, registering it
           out.println("Process: " + currentProcess + " registered... (" + process.cputime + " " + process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
         }
 
@@ -94,7 +109,7 @@ public class SchedulingAlgorithm {
             remainingTimeMin = currRemainingTime;
             minProcess = i;
         }
-        else if(currRemainingTime == remainingTimeMin){
+        else if(currRemainingTime == remainingTimeMin){   //If remaining time is equal, usining priority
           if(process.priority > ((sProcess) processVector.elementAt(minProcess)).priority) {
             remainingTimeMin = currRemainingTime;
             minProcess = i;
