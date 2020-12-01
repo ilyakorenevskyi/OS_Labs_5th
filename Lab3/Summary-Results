@@ -1,10 +1,11 @@
 Scheduling Type: Batch (Nonpreemptive)
 Scheduling Name: Shortest remaining time
-Simulation Run Time: 4713
+Simulation Run Time: 4649
 Mean: 1100
 Standard Deviation: 510
-Process #	CPU Time	Arrival Time	IO Blocking	CPU Completed	CPU Blocked
-0		1209 (ms)	0 (ms)		100 (ms)	1209 (ms)	12 times
-1		1518 (ms)	0 (ms)		500 (ms)	1518 (ms)	3 times
-2		1518 (ms)	100 (ms)	30 (ms)		1518 (ms)	50 times
-3		468 (ms)	300 (ms)	150 (ms)	468 (ms)	3 times
+Process #	CPU Time	Priority	Arrival Time	IO Blocking	CPU Completed	CPU Blocked
+0		1577 (ms)	1		0 (ms)		100 (ms)	1577 (ms)	15 times
+1		768 (ms)	2		0 (ms)		400 (ms)	768 (ms)	1 times
+2		768 (ms)	3		0 (ms)		150 (ms)	768 (ms)	5 times
+3		768 (ms)	1		100 (ms)	30 (ms)		768 (ms)	25 times
+4		768 (ms)	2		300 (ms)	150 (ms)	768 (ms)	5 times

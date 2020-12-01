@@ -29,6 +29,7 @@ public class Scheduling {
     int cputime = 0;
     int ioblocking = 0;
     int arrivalTime = 0;
+    int priority = 0;
     double X = 0.0;
 
     try {   
@@ -55,6 +56,7 @@ public class Scheduling {
           st.nextToken();
           ioblocking = Common.s2i(st.nextToken());
           arrivalTime = Common.s2i(st.nextToken());
+          priority = Common.s2i(st.nextToken());
           X = Common.R1();
           while (X == -1.0) {
             X = Common.R1();
@@ -62,10 +64,10 @@ public class Scheduling {
           X = X * standardDev;
           cputime = (int) X + meanDev;
           if(arrivalTime > 0) {
-            toArriveVector.addElement(new sProcess(cputime, arrivalTime, ioblocking, 0, 0, 0));
+            toArriveVector.addElement(new sProcess(cputime, arrivalTime, ioblocking, 0, 0, 0, priority));
           }
           else{
-            processVector.addElement(new sProcess(cputime, 0, ioblocking, 0, 0, 0));
+            processVector.addElement(new sProcess(cputime, 0, ioblocking, 0, 0, 0 , priority));
           }
         }
         if (line.startsWith("runtime")) {
@@ -132,13 +134,15 @@ public class Scheduling {
       out.println("Simulation Run Time: " + result.compuTime);
       out.println("Mean: " + meanDev);
       out.println("Standard Deviation: " + standardDev);
-      out.println("Process #\tCPU Time\tArrival Time\tIO Blocking\tCPU Completed\tCPU Blocked");
+      out.println("Process #\tCPU Time\tPriority\tArrival Time\tIO Blocking\tCPU Completed\tCPU Blocked");
       for (i = 0; i < processVector.size(); i++) {
         sProcess process = (sProcess) processVector.elementAt(i);
         out.print(Integer.toString(i));
         if (i < 100) { out.print("\t\t"); } else { out.print("\t"); }
         out.print(Integer.toString(process.cputime));
         if (process.cputime < 100) { out.print(" (ms)\t\t"); } else { out.print(" (ms)\t"); }
+        out.print(Integer.toString(process.priority));
+        if (process.priority < 100) { out.print("\t\t"); } else { out.print("\t"); }
         out.print(Integer.toString(process.arrivaltime));
         if (process.arrivaltime < 100) { out.print(" (ms)\t\t"); } else { out.print(" (ms)\t"); }
         out.print(Integer.toString(process.ioblocking));

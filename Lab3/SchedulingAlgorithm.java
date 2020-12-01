@@ -89,9 +89,17 @@ public class SchedulingAlgorithm {
     for (int i = 0; i < processVector.size(); i++) {
       sProcess process = (sProcess) processVector.elementAt(i);
       int currRemainingTime = (process.cputime - process.cpudone);
-      if((currRemainingTime!=0) && i!= previousProcess && (currRemainingTime < remainingTimeMin || remainingTimeMin == 0)){
-          remainingTimeMin = currRemainingTime;
-          minProcess = i;
+      if(currRemainingTime!=0 && i!= previousProcess){
+        if(currRemainingTime < remainingTimeMin || remainingTimeMin == 0){
+            remainingTimeMin = currRemainingTime;
+            minProcess = i;
+        }
+        else if(currRemainingTime == remainingTimeMin){
+          if(process.priority > ((sProcess) processVector.elementAt(minProcess)).priority) {
+            remainingTimeMin = currRemainingTime;
+            minProcess = i;
+          }
+        }
       }
     }
     if(minProcess == -1) return previousProcess;
