@@ -1521,6 +1521,7 @@ public class ControlPanel extends Frame
     }
     else if ( e.target == exitButton )
     {
+
       System.exit(0);
       return true;
     }

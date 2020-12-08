@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
+import java.util.concurrent.TimeUnit;
 //import Page;
 
 public class Kernel extends Thread
@@ -21,6 +21,7 @@ public class Kernel extends Thread
   private Vector clockMem = new Vector();
   private Vector instructVector = new Vector();
   private String status;
+  private TimeStatistics timeStatistics;
   private boolean doStdoutLog = false;
   private boolean doFileLog = false;
   private int currClockPointer;
@@ -29,7 +30,6 @@ public class Kernel extends Thread
   public int runcycles;
   public long block = (int) Math.pow(2,12);
   public static byte addressradix = 10;
-
   public void init( String commands , String config )  
   {
     File f = new File( commands );
@@ -53,7 +53,7 @@ public class Kernel extends Thread
     long low = 0;
     long addr = 0;
     long address_limit = (block * virtPageNum+1)-1;
-  
+    timeStatistics = new TimeStatistics();
     if ( config != null )
     {
       f = new File ( config );
@@ -154,7 +154,6 @@ public class Kernel extends Thread
               temp = st.nextToken();
             }
             workingTime =  (int) Double.parseDouble(temp);
-            System.out.println(workingTime);
           }
           if (line.startsWith("enable_logging")) 
           { 
@@ -453,8 +452,19 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
+        timeStatistics.startInterval();
         currClockPointer = PageFault.replacePage( memVector , clockMem , currClockPointer,workingTime, virtPageNum, Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel);
+        timeStatistics.endInterval();
         controlPanel.pageFaultValueLabel.setText( "YES" );
+        if ( doFileLog )
+        {
+          printLogFile( "Average algorithm time after replacing : " + timeStatistics.getMedium() + "(ms)");
+        }
+        if ( doStdoutLog )
+        {
+          System.out.println( "Average algorithm time after replacing : " + timeStatistics.getMedium() + "(ms)");
+        }
+
       } 
       else 
       {
@@ -483,8 +493,18 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
+        timeStatistics.startInterval();
         currClockPointer = PageFault.replacePage( memVector , clockMem, currClockPointer, workingTime, virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        timeStatistics.endInterval();
         controlPanel.pageFaultValueLabel.setText( "YES" );
+        if ( doFileLog )
+        {
+          printLogFile( "Average algorithm time after replacing : " + timeStatistics.getMedium() + "(ms)");
+        }
+        if ( doStdoutLog )
+        {
+          System.out.println( "Average algorithm time after replacing : " + timeStatistics.getMedium() + "(ms)");
+        }
       } 
       else 
       {

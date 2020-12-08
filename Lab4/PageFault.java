@@ -45,7 +45,6 @@ public class PageFault {
       }
     }
     Collections.sort(clockMem,(Page a, Page b) -> b.inMemTime - a.inMemTime);*/
-    System.out.println(currClockPointer);
     while(!toRemoveFound){
       int i = currClockPointer;
       do{
