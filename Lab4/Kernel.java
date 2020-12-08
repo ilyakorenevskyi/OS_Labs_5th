@@ -1,6 +1,8 @@
-import java.lang.Thread;
 import java.io.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
 //import Page;
 
 public class Kernel extends Thread
@@ -16,10 +18,12 @@ public class Kernel extends Thread
   private String config_file;
   private ControlPanel controlPanel ;
   private Vector memVector = new Vector();
+  private Vector clockMem = new Vector();
   private Vector instructVector = new Vector();
   private String status;
   private boolean doStdoutLog = false;
   private boolean doFileLog = false;
+  private int currClockPointer;
   public int runs;
   public int runcycles;
   public long block = (int) Math.pow(2,12);
@@ -339,6 +343,14 @@ public class Kernel extends Thread
         System.exit(-1);
       }
     }
+    for(int k = 0;k < virtPageNum;k++){
+      Page page = ( Page ) memVector.elementAt(k);
+      if(page.physical != -1){
+        clockMem.add(page);
+      }
+    }
+    Collections.sort(clockMem,(Page a, Page b) -> b.inMemTime - a.inMemTime);
+    currClockPointer = 0;
   } 
 
   public void setControlPanel(ControlPanel newControlPanel) 
@@ -428,7 +440,7 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        PageFault.replacePage( memVector , clockMem , currClockPointer, Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel);
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
@@ -458,7 +470,8 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          controlPanel.pageFaultValueLabel.setText( "YES" );
+        PageFault.replacePage( memVector , clockMem, currClockPointer, virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
       {
