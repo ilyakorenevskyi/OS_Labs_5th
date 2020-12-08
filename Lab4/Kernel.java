@@ -24,6 +24,7 @@ public class Kernel extends Thread
   private boolean doStdoutLog = false;
   private boolean doFileLog = false;
   private int currClockPointer;
+  private int workingTime;
   public int runs;
   public int runcycles;
   public long block = (int) Math.pow(2,12);
@@ -143,6 +144,17 @@ public class Kernel extends Thread
               page.inMemTime = inMemTime;
               page.lastTouchTime = lastTouchTime;
             }
+          }
+          if (line.startsWith("working_time"))
+          {
+            StringTokenizer st = new StringTokenizer(line);
+            String temp = "";
+            while (st.hasMoreTokens())
+            {
+              temp = st.nextToken();
+            }
+            workingTime =  (int) Double.parseDouble(temp);
+            System.out.println(workingTime);
           }
           if (line.startsWith("enable_logging")) 
           { 
@@ -343,6 +355,7 @@ public class Kernel extends Thread
         System.exit(-1);
       }
     }
+    clockMem.clear();
     for(int k = 0;k < virtPageNum;k++){
       Page page = ( Page ) memVector.elementAt(k);
       if(page.physical != -1){
@@ -440,7 +453,7 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , clockMem , currClockPointer, Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel);
+        currClockPointer = PageFault.replacePage( memVector , clockMem , currClockPointer,workingTime, virtPageNum, Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel);
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
@@ -470,11 +483,12 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , clockMem, currClockPointer, virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        currClockPointer = PageFault.replacePage( memVector , clockMem, currClockPointer, workingTime, virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
       {
+        page.R = 1;
         page.M = 1;
         page.lastTouchTime = 0;
         if ( doFileLog )
